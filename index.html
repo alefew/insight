@@ -77,6 +77,15 @@
         .glow {
             box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
         }
+        
+        /* Clicked nav link state */
+        .nav-clicked {
+            color: #10b981 !important;
+            font-weight: 700 !important;
+            border-bottom: 3px solid #10b981 !important;
+            text-shadow: 0 0 12px rgba(16, 185, 129, 0.8) !important;
+            transform: translateY(-2px) !important;
+        }
     </style>
 </head>
 <body class="font-inter text-gray-800 bg-white">
@@ -628,18 +637,40 @@
             navLinks.forEach(link => {
                 // Add custom hover effects
                 link.addEventListener('mouseenter', function() {
-                    this.style.textShadow = '0 0 8px rgba(16, 185, 129, 0.5)';
-                    this.style.transform = 'translateY(-1px)';
-                    this.style.transition = 'all 0.3s ease';
+                    if (!this.classList.contains('nav-clicked')) {
+                        this.style.textShadow = '0 0 8px rgba(16, 185, 129, 0.5)';
+                        this.style.transform = 'translateY(-1px)';
+                        this.style.transition = 'all 0.3s ease';
+                    }
                 });
                 
                 link.addEventListener('mouseleave', function() {
-                    this.style.textShadow = 'none';
-                    this.style.transform = 'translateY(0)';
+                    if (!this.classList.contains('nav-clicked')) {
+                        this.style.textShadow = 'none';
+                        this.style.transform = 'translateY(0)';
+                    }
                 });
                 
-                // Add click ripple effect
+                // Add click state that persists
                 link.addEventListener('click', function(e) {
+                    // Remove clicked state from all nav links
+                    navLinks.forEach(navLink => {
+                        navLink.classList.remove('nav-clicked');
+                        navLink.style.color = '';
+                        navLink.style.fontWeight = '';
+                        navLink.style.borderBottom = 'none';
+                        navLink.style.textShadow = 'none';
+                        navLink.style.transform = 'translateY(0)';
+                    });
+                    
+                    // Add clicked state to current link
+                    this.classList.add('nav-clicked');
+                    this.style.color = '#10b981';
+                    this.style.fontWeight = '700';
+                    this.style.borderBottom = '3px solid #10b981';
+                    this.style.textShadow = '0 0 12px rgba(16, 185, 129, 0.8)';
+                    this.style.transform = 'translateY(-2px)';
+                    
                     createRippleEffect(e, this);
                 });
             });
@@ -679,6 +710,75 @@
             });
         }
 
+        // Hero Buttons Style Swapping
+        function setupHeroButtonSwap() {
+            const heroSection = document.querySelector('section.bg-gradient-to-br');
+            if (!heroSection) return;
+            
+            const consultationBtn = heroSection.querySelector('a[href="#contact"]:first-of-type');
+            const servicesBtn = heroSection.querySelector('a[href="#services"]');
+            
+            if (!consultationBtn || !servicesBtn) return;
+            
+            // Store original classes
+            const originalConsultationClasses = consultationBtn.className;
+            const originalServicesClasses = servicesBtn.className;
+            
+            let isSwapped = false;
+            
+            function swapStyles() {
+                if (!isSwapped) {
+                    // Apply services style to consultation button
+                    consultationBtn.className = originalServicesClasses;
+                    consultationBtn.textContent = 'Get a Consultation';
+                    
+                    // Apply consultation style to services button  
+                    servicesBtn.className = originalConsultationClasses;
+                    servicesBtn.textContent = 'Explore Services';
+                    
+                    isSwapped = true;
+                } else {
+                    // Restore original styles
+                    consultationBtn.className = originalConsultationClasses;
+                    consultationBtn.textContent = 'Get a Consultation';
+                    
+                    servicesBtn.className = originalServicesClasses;
+                    servicesBtn.textContent = 'Explore Services';
+                    
+                    isSwapped = false;
+                }
+            }
+            
+            // Add click listeners to both buttons
+            consultationBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                swapStyles();
+                createRippleEffect(e, this);
+                
+                // Scroll to contact after a brief delay to show the swap
+                setTimeout(() => {
+                    document.querySelector('#contact')?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 300);
+            });
+            
+            servicesBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                swapStyles();
+                createRippleEffect(e, this);
+                
+                // Scroll to services after a brief delay to show the swap
+                setTimeout(() => {
+                    document.querySelector('#services')?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 300);
+            });
+        }
+
         // Create ripple effect for clicks
         function createRippleEffect(event, element) {
             const ripple = document.createElement('span');
@@ -705,6 +805,10 @@
         function updateActiveNavLink() {
             const sections = document.querySelectorAll('section[id]');
             const navLinks = document.querySelectorAll('nav a[href^="#"]');
+            
+            // Don't override clicked states - only update if no nav link is manually clicked
+            const hasClickedNavLink = Array.from(navLinks).some(link => link.classList.contains('nav-clicked'));
+            if (hasClickedNavLink) return;
             
             let currentSection = '';
             sections.forEach(section => {
@@ -758,6 +862,7 @@
             // Initialize enhanced styling
             enhanceNavLinks();
             enhanceButtons();
+            setupHeroButtonSwap();
         });
 
         // Update active nav link on scroll
