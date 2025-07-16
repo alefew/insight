@@ -33,6 +33,50 @@
         .enhanced-shadow:hover {
             box-shadow: 0 30px 60px rgba(31, 41, 55, 0.25), 0 0 0 1px rgba(31, 41, 55, 0.1);
         }
+        
+        /* Ripple effect animation */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.3);
+            transform: scale(0);
+            animation: ripple-animation 0.6s linear;
+            pointer-events: none;
+        }
+        
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* Enhanced pulse animation */
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            }
+        }
+        
+        /* Smooth transitions for nav links */
+        nav a {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Enhanced button hover effects */
+        button, a[class*="bg-accent"], a[class*="border-2"] {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Glow effect for active elements */
+        .glow {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+        }
     </style>
 </head>
 <body class="font-inter text-gray-800 bg-white">
@@ -575,15 +619,116 @@
             event.target.reset();
         }
 
-        // Add scroll effect to navbar
-        window.addEventListener('scroll', function() {
-            const nav = document.querySelector('nav');
-            if (window.scrollY > 100) {
-                nav.classList.add('shadow-lg');
-            } else {
-                nav.classList.remove('shadow-lg');
-            }
-        });
+
+
+        // Enhanced Navigation Link Styling
+        function enhanceNavLinks() {
+            const navLinks = document.querySelectorAll('nav a[href^="#"]');
+            
+            navLinks.forEach(link => {
+                // Add custom hover effects
+                link.addEventListener('mouseenter', function() {
+                    this.style.textShadow = '0 0 8px rgba(16, 185, 129, 0.5)';
+                    this.style.transform = 'translateY(-1px)';
+                    this.style.transition = 'all 0.3s ease';
+                });
+                
+                link.addEventListener('mouseleave', function() {
+                    this.style.textShadow = 'none';
+                    this.style.transform = 'translateY(0)';
+                });
+                
+                // Add click ripple effect
+                link.addEventListener('click', function(e) {
+                    createRippleEffect(e, this);
+                });
+            });
+        }
+
+        // Enhanced Button Styling
+        function enhanceButtons() {
+            const buttons = document.querySelectorAll('button, a[class*="bg-accent"], a[class*="border-2"]');
+            
+            buttons.forEach(button => {
+                // Add pulse effect on focus
+                button.addEventListener('focus', function() {
+                    this.style.animation = 'pulse 1s infinite';
+                });
+                
+                button.addEventListener('blur', function() {
+                    this.style.animation = 'none';
+                });
+                
+                // Enhanced click effects
+                button.addEventListener('mousedown', function() {
+                    this.style.transform = 'scale(0.98)';
+                    this.style.transition = 'transform 0.1s ease';
+                });
+                
+                button.addEventListener('mouseup', function() {
+                    this.style.transform = 'scale(1.02)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 100);
+                });
+                
+                // Add ripple effect on click
+                button.addEventListener('click', function(e) {
+                    createRippleEffect(e, this);
+                });
+            });
+        }
+
+        // Create ripple effect for clicks
+        function createRippleEffect(event, element) {
+            const ripple = document.createElement('span');
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.classList.add('ripple');
+            
+            element.style.position = 'relative';
+            element.style.overflow = 'hidden';
+            element.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        }
+
+        // Active nav link highlighting based on scroll position
+        function updateActiveNavLink() {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('nav a[href^="#"]');
+            
+            let currentSection = '';
+            sections.forEach(section => {
+                const sectionTop = section.getBoundingClientRect().top;
+                if (sectionTop <= 100) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href').substring(1);
+                if (href === currentSection) {
+                    link.style.color = '#10b981';
+                    link.style.fontWeight = '600';
+                    link.style.borderBottom = '2px solid #10b981';
+                    link.style.paddingBottom = '2px';
+                } else {
+                    link.style.color = '';
+                    link.style.fontWeight = '';
+                    link.style.borderBottom = 'none';
+                    link.style.paddingBottom = '';
+                }
+            });
+        }
 
         // Animate elements on scroll
         const observerOptions = {
@@ -609,6 +754,22 @@
                 el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
                 observer.observe(el);
             });
+            
+            // Initialize enhanced styling
+            enhanceNavLinks();
+            enhanceButtons();
+        });
+
+        // Update active nav link on scroll
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 100) {
+                nav.classList.add('shadow-lg');
+            } else {
+                nav.classList.remove('shadow-lg');
+            }
+            
+            updateActiveNavLink();
         });
     </script>
 </body>
