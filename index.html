@@ -34,21 +34,9 @@
             box-shadow: 0 30px 60px rgba(31, 41, 55, 0.25), 0 0 0 1px rgba(31, 41, 55, 0.1);
         }
         
-        /* Ripple effect animation */
+        /* Ripple effect animation - DISABLED */
         .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(16, 185, 129, 0.3);
-            transform: scale(0);
-            animation: ripple-animation 0.6s linear;
-            pointer-events: none;
-        }
-        
-        @keyframes ripple-animation {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
+            display: none;
         }
         
         /* Enhanced pulse animation */
@@ -83,8 +71,12 @@
             color: #10b981 !important;
             font-weight: 700 !important;
             border-bottom: 3px solid #10b981 !important;
-            text-shadow: 0 0 12px rgba(16, 185, 129, 0.8) !important;
-            transform: translateY(-2px) !important;
+        }
+        
+        /* Special styling for clicked consultation button */
+        .nav-clicked.consultation-btn {
+            color: #000000 !important;
+            background-color: #f0f0f0 !important;
         }
     </style>
 </head>
@@ -655,23 +647,20 @@
                 link.addEventListener('click', function(e) {
                     // Remove clicked state from all nav links
                     navLinks.forEach(navLink => {
-                        navLink.classList.remove('nav-clicked');
+                        navLink.classList.remove('nav-clicked', 'consultation-btn');
                         navLink.style.color = '';
                         navLink.style.fontWeight = '';
                         navLink.style.borderBottom = 'none';
-                        navLink.style.textShadow = 'none';
-                        navLink.style.transform = 'translateY(0)';
+                        navLink.style.backgroundColor = '';
                     });
                     
                     // Add clicked state to current link
                     this.classList.add('nav-clicked');
-                    this.style.color = '#10b981';
-                    this.style.fontWeight = '700';
-                    this.style.borderBottom = '3px solid #10b981';
-                    this.style.textShadow = '0 0 12px rgba(16, 185, 129, 0.8)';
-                    this.style.transform = 'translateY(-2px)';
                     
-                    createRippleEffect(e, this);
+                    // Special handling for consultation button
+                    if (this.textContent.includes('Consultation')) {
+                        this.classList.add('consultation-btn');
+                    }
                 });
             });
         }
@@ -703,10 +692,7 @@
                     }, 100);
                 });
                 
-                // Add ripple effect on click
-                button.addEventListener('click', function(e) {
-                    createRippleEffect(e, this);
-                });
+                // Ripple effect disabled for better UX
             });
         }
 
@@ -753,7 +739,6 @@
             consultationBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 swapStyles();
-                createRippleEffect(e, this);
                 
                 // Scroll to contact after a brief delay to show the swap
                 setTimeout(() => {
@@ -767,7 +752,6 @@
             servicesBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 swapStyles();
-                createRippleEffect(e, this);
                 
                 // Scroll to services after a brief delay to show the swap
                 setTimeout(() => {
@@ -779,27 +763,7 @@
             });
         }
 
-        // Create ripple effect for clicks
-        function createRippleEffect(event, element) {
-            const ripple = document.createElement('span');
-            const rect = element.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            const x = event.clientX - rect.left - size / 2;
-            const y = event.clientY - rect.top - size / 2;
-            
-            ripple.style.width = ripple.style.height = size + 'px';
-            ripple.style.left = x + 'px';
-            ripple.style.top = y + 'px';
-            ripple.classList.add('ripple');
-            
-            element.style.position = 'relative';
-            element.style.overflow = 'hidden';
-            element.appendChild(ripple);
-            
-            setTimeout(() => {
-                ripple.remove();
-            }, 600);
-        }
+        // Ripple effect function removed for better UX
 
         // Active nav link highlighting based on scroll position
         function updateActiveNavLink() {
