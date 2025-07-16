@@ -71,12 +71,14 @@
             color: #10b981 !important;
             font-weight: 700 !important;
             border-bottom: 3px solid #10b981 !important;
+            text-shadow: none !important; /* Remove any text glow */
         }
         
         /* Special styling for clicked consultation button */
         .nav-clicked.consultation-btn {
             color: #000000 !important;
             background-color: #f0f0f0 !important;
+            text-shadow: none !important;
         }
     </style>
 </head>
@@ -652,6 +654,8 @@
                         navLink.style.fontWeight = '';
                         navLink.style.borderBottom = 'none';
                         navLink.style.backgroundColor = '';
+                        navLink.style.textShadow = 'none'; // Remove text glow on all nav links
+                        navLink.style.transform = 'translateY(0)'; // Reset transform
                     });
                     
                     // Add clicked state to current link
@@ -663,6 +667,33 @@
                     }
                 });
             });
+        }
+        
+        // Function to set active nav link
+        function setActiveNavLink(targetSection) {
+            const navLinks = document.querySelectorAll('nav a[href^="#"]');
+            
+            // Remove clicked state from all nav links
+            navLinks.forEach(navLink => {
+                navLink.classList.remove('nav-clicked', 'consultation-btn');
+                navLink.style.color = '';
+                navLink.style.fontWeight = '';
+                navLink.style.borderBottom = 'none';
+                navLink.style.backgroundColor = '';
+                navLink.style.textShadow = 'none'; // Remove text glow
+                navLink.style.transform = 'translateY(0)'; // Reset transform
+            });
+            
+            // Find and activate the target nav link
+            const targetNavLink = document.querySelector(`nav a[href="#${targetSection}"]`);
+            if (targetNavLink) {
+                targetNavLink.classList.add('nav-clicked');
+                
+                // Special handling for consultation button
+                if (targetNavLink.textContent.includes('Consultation')) {
+                    targetNavLink.classList.add('consultation-btn');
+                }
+            }
         }
 
         // Enhanced Button Styling
@@ -679,91 +710,89 @@
                     this.style.animation = 'none';
                 });
                 
-                // Enhanced click effects
+                // Enhanced click effects - no ripple
                 button.addEventListener('mousedown', function() {
                     this.style.transform = 'scale(0.98)';
                     this.style.transition = 'transform 0.1s ease';
                 });
                 
                 button.addEventListener('mouseup', function() {
-                    this.style.transform = 'scale(1.02)';
-                    setTimeout(() => {
-                        this.style.transform = 'scale(1)';
-                    }, 100);
+                    this.style.transform = 'scale(1)';
+                    this.style.transition = 'transform 0.1s ease';
+                    
+                    // Remove any residual ripple effects
+                    const ripples = this.querySelectorAll('.ripple');
+                    ripples.forEach(ripple => ripple.remove());
                 });
                 
-                // Ripple effect disabled for better UX
-            });
-        }
-
-        // Hero Buttons Style Swapping
-        function setupHeroButtonSwap() {
-            const heroSection = document.querySelector('section.bg-gradient-to-br');
-            if (!heroSection) return;
-            
-            const consultationBtn = heroSection.querySelector('a[href="#contact"]:first-of-type');
-            const servicesBtn = heroSection.querySelector('a[href="#services"]');
-            
-            if (!consultationBtn || !servicesBtn) return;
-            
-            // Store original classes
-            const originalConsultationClasses = consultationBtn.className;
-            const originalServicesClasses = servicesBtn.className;
-            
-            let isSwapped = false;
-            
-            function swapStyles() {
-                if (!isSwapped) {
-                    // Apply services style to consultation button
-                    consultationBtn.className = originalServicesClasses;
-                    consultationBtn.textContent = 'Get a Consultation';
-                    
-                    // Apply consultation style to services button  
-                    servicesBtn.className = originalConsultationClasses;
-                    servicesBtn.textContent = 'Explore Services';
-                    
-                    isSwapped = true;
-                } else {
-                    // Restore original styles
-                    consultationBtn.className = originalConsultationClasses;
-                    consultationBtn.textContent = 'Get a Consultation';
-                    
-                    servicesBtn.className = originalServicesClasses;
-                    servicesBtn.textContent = 'Explore Services';
-                    
-                    isSwapped = false;
+                // Handle Get Consultation buttons
+                if (button.textContent.includes('Get Consultation') || button.textContent.includes('Get a Consultation')) {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        setActiveNavLink('contact');
+                        setTimeout(() => {
+                            document.querySelector('#contact')?.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }, 100);
+                    });
                 }
-            }
-            
-            // Add click listeners to both buttons
-            consultationBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                swapStyles();
                 
-                // Scroll to contact after a brief delay to show the swap
-                setTimeout(() => {
-                    document.querySelector('#contact')?.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
+                // Handle Explore Services button
+                if (button.textContent.includes('Explore Services')) {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        setActiveNavLink('services');
+                        setTimeout(() => {
+                            document.querySelector('#services')?.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }, 100);
                     });
-                }, 300);
-            });
-            
-            servicesBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                swapStyles();
-                
-                // Scroll to services after a brief delay to show the swap
-                setTimeout(() => {
-                    document.querySelector('#services')?.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }, 300);
+                }
             });
         }
 
-        // Ripple effect function removed for better UX
+        // Setup additional hero button handlers (if enhanceButtons didn't catch them)
+        function setupAdditionalButtonHandlers() {
+            // Handle any remaining Get Consultation buttons not caught by enhanceButtons
+            const consultationButtons = document.querySelectorAll('a[href="#contact"]');
+            consultationButtons.forEach(button => {
+                if (!button.hasAttribute('data-handler-added')) {
+                    button.setAttribute('data-handler-added', 'true');
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        setActiveNavLink('contact');
+                        setTimeout(() => {
+                            document.querySelector('#contact')?.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }, 100);
+                    });
+                }
+            });
+            
+            // Handle any remaining Explore Services buttons
+            const servicesButtons = document.querySelectorAll('a[href="#services"]');
+            servicesButtons.forEach(button => {
+                if (!button.hasAttribute('data-handler-added')) {
+                    button.setAttribute('data-handler-added', 'true');
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        setActiveNavLink('services');
+                        setTimeout(() => {
+                            document.querySelector('#services')?.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }, 100);
+                    });
+                }
+            });
+        }
 
         // Active nav link highlighting based on scroll position
         function updateActiveNavLink() {
@@ -789,11 +818,15 @@
                     link.style.fontWeight = '600';
                     link.style.borderBottom = '2px solid #10b981';
                     link.style.paddingBottom = '2px';
+                    link.style.textShadow = 'none'; // Ensure no text glow
+                    link.style.transform = 'translateY(0)'; // Reset transform
                 } else {
                     link.style.color = '';
                     link.style.fontWeight = '';
                     link.style.borderBottom = 'none';
                     link.style.paddingBottom = '';
+                    link.style.textShadow = 'none'; // Ensure no text glow
+                    link.style.transform = 'translateY(0)'; // Reset transform
                 }
             });
         }
@@ -826,7 +859,7 @@
             // Initialize enhanced styling
             enhanceNavLinks();
             enhanceButtons();
-            setupHeroButtonSwap();
+            setupAdditionalButtonHandlers();
         });
 
         // Update active nav link on scroll
